@@ -33,6 +33,7 @@
 : ${DRIVER_IMAGE_NAME:="${DRIVER_NAME}"}
 : ${DRIVER_IMAGE_PLATFORM:=ubi-minimal-9.6}
 : ${DRIVER_IMAGE_TAG:="${VERSION}"}
+: ${PLATFORMS:=linux/amd64,linux/ppc64le}
 
 # Helm/chart defaults
 : ${DRIVER_CHART_REGISTRY:=docker.io/rocm}

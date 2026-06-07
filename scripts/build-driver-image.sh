@@ -39,4 +39,12 @@ TMP_DIR="$(mktemp -d)"; trap 'rm -rf "${TMP_DIR}"' EXIT
 cd "${PROJECT_DIR}"
 
 make docker-generate
-make -f deployments/container/Makefile "${DRIVER_IMAGE_PLATFORM}"
+
+# Support multi-arch builds via MULTIARCH=true environment variable
+if [[ "${MULTIARCH:-false}" == "true" ]]; then
+    echo "Building multi-arch image for platforms: ${PLATFORMS}"
+    make -f deployments/container/Makefile "${DRIVER_IMAGE_PLATFORM}-multiarch"
+else
+    echo "Building single-arch image for current platform"
+    make -f deployments/container/Makefile "${DRIVER_IMAGE_PLATFORM}"
+fi

@@ -31,6 +31,7 @@
 MKDIR ?= mkdir
 DISTRIBUTIONS := ubi-minimal-9.6
 DOCKERFILE := $(CURDIR)/deployments/container/Dockerfile
+PLATFORMS ?= linux/amd64,linux/ppc64le
 
 include $(CURDIR)/env.mk
 
@@ -38,13 +39,13 @@ DRIVER_IMAGE_TAG ?= $(VERSION)
 IMAGE ?= $(DRIVER_IMAGE_REGISTRY)/$(DRIVER_IMAGE_NAME):$(DRIVER_IMAGE_TAG)
 
 ##### Public rules #####
-.PHONY: $(DISTRIBUTIONS)
+.PHONY: $(DISTRIBUTIONS) $(DISTRIBUTIONS)-multiarch
 
 ubi-minimal-9.6: BASE_IMAGE = registry.access.redhat.com/ubi9/ubi-minimal:9.6
 
-# Use a generic build target to build the relevant images
+# Single-arch build (local, no push)
 $(DISTRIBUTIONS):
-	@echo "Building image: $(IMAGE) using base image: $(BASE_IMAGE)"
+	@echo "Building single-arch image: $(IMAGE) using base image: $(BASE_IMAGE)"
 	DOCKER_BUILDKIT=1 \
 		docker build --pull \
 		--tag $(IMAGE) \
@@ -52,6 +53,20 @@ $(DISTRIBUTIONS):
 		--build-arg BASE_IMAGE="$(BASE_IMAGE)" \
 		--build-arg VERSION="$(VERSION)" \
 		-f $(DOCKERFILE) \
+		$(CURDIR)
+
+# Multi-arch build targets
+$(DISTRIBUTIONS)-multiarch: BASE_IMAGE = registry.access.redhat.com/ubi9/ubi-minimal:9.6
+$(DISTRIBUTIONS)-multiarch:
+	@echo "Building multi-arch image: $(IMAGE) for platforms: $(PLATFORMS)"
+	docker buildx build --pull \
+		--platform $(PLATFORMS) \
+		--tag $(IMAGE) \
+		--build-arg GOLANG_VERSION="$(GOLANG_VERSION)" \
+		--build-arg BASE_IMAGE="$(BASE_IMAGE)" \
+		--build-arg VERSION="$(VERSION)" \
+		-f $(DOCKERFILE) \
+		--push \
 		$(CURDIR)
 
 push:

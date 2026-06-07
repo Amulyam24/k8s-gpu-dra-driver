@@ -61,13 +61,14 @@ DOCKER_TARGETS := $(patsubst %,docker-%, $(TARGETS))
 .PHONY: $(TARGETS) $(DOCKER_TARGETS)
 
 GOOS ?= linux
+GOARCH ?= $(shell go env GOARCH)
 
 ifneq ($(PREFIX),)
 cmd-%: COMMAND_BUILD_OPTIONS = -o $(PREFIX)/$(*)
 endif
 cmds: $(CMD_TARGETS)
 $(CMD_TARGETS): cmd-%:
-	CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' GOOS=$(GOOS) \
+	CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' GOOS=$(GOOS) GOARCH=$(GOARCH) \
 		go build -ldflags "-s -w -X main.version=$(VERSION)" $(COMMAND_BUILD_OPTIONS) $(MODULE)/cmd/$(*)
 
 build:

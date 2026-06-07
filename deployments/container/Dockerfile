@@ -31,12 +31,13 @@ ARG GOLANG_VERSION=undefined
 ARG BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.6
 FROM golang:${GOLANG_VERSION} as build
 
+ARG TARGETARCH
 WORKDIR /build
 COPY . .
 
 ENV CGO_ENABLED=0
 RUN mkdir /artifacts && \
-    make PREFIX=/artifacts cmds
+    GOARCH=${TARGETARCH} make PREFIX=/artifacts cmds
 
 FROM ${BASE_IMAGE}
 
